@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>たのしくまなぶ！ローマ字きょうしつ</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for Kyokasho-like font (Fallback) & Friendly Alphabet -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=M+PLUS+Rounded+1c:wght@700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 教科書体を優先するフォント設定 */
+        .font-kyokasho {
+            font-family: 
+                "UD Digi Kyokasho N-R", 
+                "UD デジタル 教科書体 N-R", 
+                "UDDigiKyokashoN-R",
+                "Kyokasho HD", 
+                "教科書体", 
+                "Klee One", 
+                serif;
+        }
+
+        /* 全体 UI 用のフォント（読みやすい丸ゴシック） */
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: #f0fdf4;
+            overscroll-behavior-y: none;
+        }
+
+        * {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .bouncy {
+            transition: transform 0.08s ease-in-out;
+        }
+        .bouncy:active {
+            transform: scale(0.92);
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #86efac;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between selection:bg-none">
+
+    <!-- Header -->
+    <header class="bg-emerald-500 text-white shadow-md p-4 md:p-5 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-white text-emerald-500 p-2.5 md:p-3 rounded-2xl shadow font-black text-2xl md:text-3xl">
+                    ✏️
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-black tracking-wide">ローマ字きょうしつ</h1>
+                    <p class="text-xs md:text-sm text-emerald-100">しょうがっこう3ねんせいむけ (ヘボンしき)</p>
+                </div>
+            </div>
+            
+            <div class="bg-emerald-600/90 text-emerald-50 px-4 py-2 rounded-2xl text-sm md:text-base font-extrabold shadow-inner border border-emerald-400/30 flex items-center gap-2">
+                <i class="fa-solid fa-star text-amber-300"></i>
+                <span>ヘボンしき</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="bg-white shadow-sm border-b border-emerald-100 sticky top-[72px] md:top-[84px] z-40">
+        <div class="max-w-5xl mx-auto flex justify-around p-2 md:p-3 gap-2">
+            <button onclick="switchTab('chart')" id="tabChart" class="tab-btn flex-1 py-3 md:py-4 px-3 text-center font-bold text-emerald-600 border-b-4 border-emerald-500 flex items-center justify-center gap-2 text-base md:text-xl rounded-t-xl transition-all">
+                <i class="fa-solid fa-table-cells text-xl md:text-2xl"></i>
+                <span>ローマ字ひょう</span>
+            </button>
+            <button onclick="switchTab('quiz')" id="tabQuiz" class="tab-btn flex-1 py-3 md:py-4 px-3 text-center font-bold text-slate-400 border-b-4 border-transparent hover:text-emerald-500 flex items-center justify-center gap-2 text-base md:text-xl rounded-t-xl transition-all">
+                <i class="fa-solid fa-circle-question text-xl md:text-2xl"></i>
+                <span>えらぶクイズ</span>
+            </button>
+            <button onclick="switchTab('typing')" id="tabTyping" class="tab-btn flex-1 py-3 md:py-4 px-3 text-center font-bold text-slate-400 border-b-4 border-transparent hover:text-emerald-500 flex items-center justify-center gap-2 text-base md:text-xl rounded-t-xl transition-all">
+                <i class="fa-solid fa-keyboard text-xl md:text-2xl"></i>
+                <span>タイピング</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="max-w-5xl mx-auto w-full flex-grow p-4 md:p-8">
+
+        <!-- TAB 1: ROMAJI CHART -->
+        <section id="contentChart" class="space-y-6">
+            <div class="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-4 md:p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">🔊</span>
+                    <p class="text-base md:text-lg text-emerald-900 font-extrabold">
+                        カードをおすと、こえで はつおん がきけるよ！
+                    </p>
+                </div>
+                <!-- Category Filters -->
+                <div class="flex gap-2 md:gap-3 w-full md:w-auto">
+                    <button id="filterBtnSeion" onclick="renderChart('seion')" class="chart-filter-btn flex-1 md:flex-none px-5 py-2.5 bg-emerald-500 text-white font-extrabold rounded-2xl text-base md:text-lg shadow-md transition">せいおん</button>
+                    <button id="filterBtnDakuon" onclick="renderChart('dakuon')" class="chart-filter-btn flex-1 md:flex-none px-5 py-2.5 bg-white text-emerald-800 font-extrabold rounded-2xl text-base md:text-lg border-2 border-emerald-200 transition">だくおん</button>
+                    <button id="filterBtnYouon" onclick="renderChart('youon')" class="chart-filter-btn flex-1 md:flex-none px-5 py-2.5 bg-white text-emerald-800 font-extrabold rounded-2xl text-base md:text-lg border-2 border-emerald-200 transition">ようおん</button>
+                </div>
+            </div>
+
+            <!-- Chart Grid Container -->
+            <div id="chartGrid" class="grid grid-cols-5 gap-3 md:gap-4">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+        <!-- TAB 2: QUIZ MODE -->
+        <section id="contentQuiz" class="hidden space-y-6">
+            <!-- Score Banner -->
+            <div class="flex justify-between items-center bg-amber-50 border-2 border-amber-200 p-4 md:p-5 rounded-3xl shadow-sm">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">⭐</span>
+                    <span class="font-black text-amber-800 text-xl md:text-2xl">スコア: <span id="quizScore">0</span> てん</span>
+                </div>
+                <button onclick="resetQuiz()" class="text-sm md:text-base bg-amber-200 hover:bg-amber-300 text-amber-900 font-extrabold px-4 py-2 rounded-2xl transition bouncy">
+                    やりなおす
+                </button>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-white rounded-3xl p-8 md:p-12 shadow-lg border-2 border-emerald-100 text-center space-y-8 relative">
+                <div class="inline-block bg-emerald-100 text-emerald-800 font-extrabold text-sm md:text-base px-4 py-1.5 rounded-full">
+                    もんだい
+                </div>
+                
+                <div class="flex items-center justify-center gap-6">
+                    <!-- 教科書体フォント適用箇所 -->
+                    <span id="quizKana" class="font-kyokasho text-7xl md:text-9xl font-semibold text-slate-800 tracking-wide">あ</span>
+                    <button onclick="speakCurrentQuizKana()" class="w-16 h-16 md:w-20 md:h-20 bg-amber-400 hover:bg-amber-500 text-white rounded-3xl flex items-center justify-center text-2xl md:text-3xl shadow-lg transition bouncy" title="はつおんをきく">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                </div>
+
+                <p class="text-base md:text-xl text-slate-600 font-extrabold">ただしい ローマ字 はどれかな？</p>
+
+                <!-- Choices Grid -->
+                <div id="quizOptions" class="grid grid-cols-2 gap-4 md:gap-6 max-w-xl mx-auto">
+                    <!-- Dynamic Buttons -->
+                </div>
+
+                <!-- Feedback Message -->
+                <div id="quizFeedback" class="hidden text-2xl md:text-3xl font-black py-3 rounded-2xl shadow-inner"></div>
+            </div>
+        </section>
+
+        <!-- TAB 3: TYPING PRACTICE -->
+        <section id="contentTyping" class="hidden space-y-6">
+            <!-- Header Status -->
+            <div class="flex justify-between items-center bg-blue-50 border-2 border-blue-200 p-4 md:p-5 rounded-3xl shadow-sm">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">🎯</span>
+                    <span class="font-black text-blue-800 text-xl md:text-2xl">せいかい: <span id="typingScore">0</span> もん</span>
+                </div>
+                <button onclick="nextTypingWord()" class="text-sm md:text-base bg-blue-200 hover:bg-blue-300 text-blue-900 font-extrabold px-4 py-2 rounded-2xl transition bouncy">
+                    つぎのもんだい ➔
+                </button>
+            </div>
+
+            <!-- Typing Card -->
+            <div class="bg-white rounded-3xl p-6 md:p-10 shadow-lg border-2 border-blue-100 text-center space-y-6 md:space-y-8">
+                <!-- Word Display -->
+                <div>
+                    <span id="typingIcon" class="text-6xl md:text-8xl mb-2 block animate-bounce">🐱</span>
+                    <!-- 教科書体フォント適用箇所 -->
+                    <h2 id="typingKana" class="font-kyokasho text-4xl md:text-6xl font-semibold text-slate-800 tracking-widest">ねこ</h2>
+                </div>
+
+                <!-- Romaji Slots Container -->
+                <div id="romajiSlots" class="flex justify-center items-center gap-3 flex-wrap min-h-[70px]">
+                    <!-- Dynamic Letter Boxes -->
+                </div>
+
+                <p class="text-sm md:text-base text-slate-500 font-extrabold">
+                    キーボード でうつか、したのボタンをタップしてね！
+                </p>
+
+                <!-- Keyboard -->
+                <div id="onScreenKeyboard" class="grid grid-cols-7 sm:grid-cols-9 gap-2 max-w-2xl mx-auto pt-4 border-t-2 border-slate-100">
+                    <!-- Dynamic Keyboard -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-100 border-t border-slate-200 text-center py-4 text-xs md:text-sm text-slate-500 font-bold">
+        たのしくまなぶ！ローマ字きょうしつ &copy; 小学校3年生向け学習アプリ (教科書体表示対応)
+    </footer>
+
+    <script>
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        window.addEventListener('touchstart', initAudio, { once: true });
+        window.addEventListener('click', initAudio, { once: true });
+
+        let currentFilter = 'seion';
+
+        const romajiData = {
+            seion: [
+                { kana: 'あ', romaji: 'a' }, { kana: 'い', romaji: 'i' }, { kana: 'う', romaji: 'u' }, { kana: 'え', romaji: 'e' }, { kana: 'お', romaji: 'o' },
+                { kana: 'か', romaji: 'ka' }, { kana: 'き', romaji: 'ki' }, { kana: 'く', romaji: 'ku' }, { kana: 'け', romaji: 'ke' }, { kana: 'こ', romaji: 'ko' },
+                { kana: 'さ', romaji: 'sa' }, { kana: 'し', romaji: 'shi' }, { kana: 'す', romaji: 'su' }, { kana: 'せ', romaji: 'se' }, { kana: 'そ', romaji: 'so' },
+                { kana: 'た', romaji: 'ta' }, { kana: 'ち', romaji: 'chi' }, { kana: 'つ', romaji: 'tsu' }, { kana: 'て', romaji: 'te' }, { kana: 'と', romaji: 'to' },
+                { kana: 'な', romaji: 'na' }, { kana: 'に', romaji: 'ni' }, { kana: 'ぬ', romaji: 'nu' }, { kana: 'ね', romaji: 'ne' }, { kana: 'の', romaji: 'no' },
+                { kana: 'は', romaji: 'ha' }, { kana: 'ひ', romaji: 'hi' }, { kana: 'ふ', romaji: 'fu' }, { kana: 'へ', romaji: 'he' }, { kana: 'ほ', romaji: 'ho' },
+                { kana: 'ま', romaji: 'ma' }, { kana: 'み', romaji: 'mi' }, { kana: 'む', romaji: 'mu' }, { kana: 'め', romaji: 'me' }, { kana: 'も', romaji: 'mo' },
+                { kana: 'や', romaji: 'ya' }, { kana: '', romaji: '' }, { kana: 'ゆ', romaji: 'yu' }, { kana: '', romaji: '' }, { kana: 'よ', romaji: 'yo' },
+                { kana: 'ら', romaji: 'ra' }, { kana: 'り', romaji: 'ri' }, { kana: 'る', romaji: 'ru' }, { kana: 'れ', romaji: 're' }, { kana: 'ろ', romaji: 'ro' },
+                { kana: 'わ', romaji: 'wa' }, { kana: '', romaji: '' }, { kana: '', romaji: '' }, { kana: '', romaji: '' }, { kana: 'を', romaji: 'o' },
+                { kana: 'ん', romaji: 'n' }, { kana: '', romaji: '' }, { kana: '', romaji: '' }, { kana: '', romaji: '' }, { kana: '', romaji: '' }
+            ],
+            dakuon: [
+                { kana: 'が', romaji: 'ga' }, { kana: 'ぎ', romaji: 'gi' }, { kana: 'ぐ', romaji: 'gu' }, { kana: 'げ', romaji: 'ge' }, { kana: 'ご', romaji: 'go' },
+                { kana: 'ざ', romaji: 'za' }, { kana: 'じ', romaji: 'ji' }, { kana: 'ず', romaji: 'zu' }, { kana: 'ぜ', romaji: 'ze' }, { kana: 'ぞ', romaji: 'zo' },
+                { kana: 'だ', romaji: 'da' }, { kana: 'ぢ', romaji: 'ji' }, { kana: 'づ', romaji: 'zu' }, { kana: 'で', romaji: 'de' }, { kana: 'ど', romaji: 'do' },
+                { kana: 'ば', romaji: 'ba' }, { kana: 'び', romaji: 'bi' }, { kana: 'ぶ', romaji: 'bu' }, { kana: 'べ', romaji: 'be' }, { kana: 'ぼ', romaji: 'bo' },
+                { kana: 'ぱ', romaji: 'pa' }, { kana: 'ぴ', romaji: 'pi' }, { kana: 'ぷ', romaji: 'pu' }, { kana: 'ぺ', romaji: 'pe' }, { kana: 'ぽ', romaji: 'po' }
+            ],
+            youon: [
+                { kana: 'きゃ', romaji: 'kya' }, { kana: 'きゅ', romaji: 'kyu' }, { kana: 'きょ', romaji: 'kyo' },
+                { kana: 'しゃ', romaji: 'sha' }, { kana: 'しゅ', romaji: 'shu' }, { kana: 'しょ', romaji: 'sho' },
+                { kana: 'ちゃ', romaji: 'cha' }, { kana: 'ちゅ', romaji: 'chu' }, { kana: 'ちょ', romaji: 'cho' },
+                { kana: 'にゃ', romaji: 'nya' }, { kana: 'にゅ', romaji: 'nyu' }, { kana: 'にょ', romaji: 'nyo' },
+                { kana: 'ひゃ', romaji: 'hya' }, { kana: 'ひゅ', romaji: 'hyu' }, { kana: 'ひょ', romaji: 'hyo' },
+                { kana: 'みゃ', romaji: 'mya' }, { kana: 'みゅ', romaji: 'myu' }, { kana: 'みょ', romaji: 'myo' },
+                { kana: 'りゃ', romaji: 'rya' }, { kana: 'りゅ', romaji: 'ryu' }, { kana: 'りょ', romaji: 'ryo' },
+                { kana: 'ぎゃ', romaji: 'gya' }, { kana: 'ぎゅ', romaji: 'gyu' }, { kana: 'ぎょ', romaji: 'gyo' },
+                { kana: 'じゃ', romaji: 'ja' }, { kana: 'じゅ', romaji: 'ju' }, { kana: 'じょ', romaji: 'jo' },
+                { kana: 'びゃ', romaji: 'bya' }, { kana: 'びゅ', romaji: 'byu' }, { kana: 'びょ', romaji: 'byo' },
+                { kana: 'ぴゃ', romaji: 'pya' }, { kana: 'ぴゅ', romaji: 'pyu' }, { kana: 'ぴょ', romaji: 'pyo' }
+            ]
+        };
+
+        const wordsData = [
+            { kana: 'すいか', icon: '🍉', romaji: 'suika' },
+            { kana: 'ねこ', icon: '🐱', romaji: 'neko' },
+            { kana: 'いぬ', icon: '🐶', romaji: 'inu' },
+            { kana: 'さくら', icon: '🌸', romaji: 'sakura' },
+            { kana: 'つくえ', icon: '🪑', romaji: 'tsukue' },
+            { kana: 'しんかんせん', icon: '🚅', romaji: 'shinkansen' },
+            { kana: 'ひこうき', icon: '✈️', romaji: 'hikouki' },
+            { kana: 'やま', icon: '⛰️', romaji: 'yama' },
+            { kana: 'うみ', icon: '🌊', romaji: 'umi' },
+            { kana: 'すし', icon: '🍣', romaji: 'sushi' },
+            { kana: 'ちず', icon: '🗺️', romaji: 'chizu' },
+            { kana: 'ほし', icon: '⭐', romaji: 'hoshi' },
+            { kana: 'りんご', icon: '🍎', romaji: 'ringo' }
+        ];
+
+        function playSound(type) {
+            initAudio();
+            if (!audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+                osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(180, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'tap') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            }
+        }
+
+        function speakText(text, lang = 'ja-JP') {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = lang;
+                utterance.rate = 0.85;
+                utterance.pitch = 1.1;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function switchTab(tab) {
+            playSound('tap');
+            document.getElementById('contentChart').classList.add('hidden');
+            document.getElementById('contentQuiz').classList.add('hidden');
+            document.getElementById('contentTyping').classList.add('hidden');
+
+            const inactiveStyle = 'tab-btn flex-1 py-3 md:py-4 px-3 text-center font-bold text-slate-400 border-b-4 border-transparent hover:text-emerald-500 flex items-center justify-center gap-2 text-base md:text-xl rounded-t-xl transition-all';
+            const activeStyle = 'tab-btn flex-1 py-3 md:py-4 px-3 text-center font-bold text-emerald-600 border-b-4 border-emerald-500 flex items-center justify-center gap-2 text-base md:text-xl rounded-t-xl transition-all';
+
+            document.getElementById('tabChart').className = inactiveStyle;
+            document.getElementById('tabQuiz').className = inactiveStyle;
+            document.getElementById('tabTyping').className = inactiveStyle;
+
+            if (tab === 'chart') {
+                document.getElementById('contentChart').classList.remove('hidden');
+                document.getElementById('tabChart').className = activeStyle;
+            } else if (tab === 'quiz') {
+                document.getElementById('contentQuiz').classList.remove('hidden');
+                document.getElementById('tabQuiz').className = activeStyle;
+                loadNextQuizQuestion();
+            } else if (tab === 'typing') {
+                document.getElementById('contentTyping').classList.remove('hidden');
+                document.getElementById('tabTyping').className = activeStyle;
+                setupTypingWord();
+            }
+        }
+
+        function renderChart(filter) {
+            currentFilter = filter;
+            const grid = document.getElementById('chartGrid');
+            grid.innerHTML = '';
+
+            const filterBtns = {
+                'seion': document.getElementById('filterBtnSeion'),
+                'dakuon': document.getElementById('filterBtnDakuon'),
+                'youon': document.getElementById('filterBtnYouon')
+            };
+
+            Object.keys(filterBtns).forEach(key => {
+                if (key === filter) {
+                    filterBtns[key].className = 'chart-filter-btn flex-1 md:flex-none px-5 py-2.5 bg-emerald-500 text-white font-extrabold rounded-2xl text-base md:text-lg shadow-md transition';
+                } else {
+                    filterBtns[key].className = 'chart-filter-btn flex-1 md:flex-none px-5 py-2.5 bg-white text-emerald-800 font-extrabold rounded-2xl text-base md:text-lg border-2 border-emerald-200 transition';
+                }
+            });
+
+            const items = romajiData[filter];
+            grid.className = filter === 'youon' ? 'grid grid-cols-3 gap-3 md:gap-4' : 'grid grid-cols-5 gap-3 md:gap-4';
+
+            items.forEach(item => {
+                if (!item.kana) {
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.className = 'bg-slate-100/40 rounded-3xl min-h-[85px] md:min-h-[105px]';
+                    grid.appendChild(emptyDiv);
+                    return;
+                }
+
+                const card = document.createElement('button');
+                card.className = 'bg-white hover:bg-emerald-50 active:bg-emerald-100 border-2 border-emerald-100 hover:border-emerald-300 rounded-3xl p-3 md:p-5 text-center shadow-sm hover:shadow-md transition flex flex-col items-center justify-center min-h-[85px] md:min-h-[105px] bouncy';
+                card.onclick = () => {
+                    playSound('tap');
+                    speakText(item.kana, 'ja-JP');
+                };
+
+                // 表のひらがな部分にも font-kyokasho クラスを適用
+                card.innerHTML = `
+                    <span class="font-kyokasho text-3xl md:text-5xl font-semibold text-slate-800">${item.kana}</span>
+                    <span class="text-xs md:text-base font-extrabold text-emerald-600 tracking-wider mt-1">${item.romaji}</span>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        let quizScore = 0;
+        let currentQuizItem = null;
+
+        function loadNextQuizQuestion() {
+            const feedback = document.getElementById('quizFeedback');
+            feedback.classList.add('hidden');
+
+            const allItems = [...romajiData.seion, ...romajiData.dakuon, ...romajiData.youon].filter(x => x.kana !== '');
+            currentQuizItem = allItems[Math.floor(Math.random() * allItems.length)];
+
+            document.getElementById('quizKana').textContent = currentQuizItem.kana;
+
+            const correctAnswer = currentQuizItem.romaji;
+            const choices = new Set([correctAnswer]);
+
+            while (choices.size < 4) {
+                const randomItem = allItems[Math.floor(Math.random() * allItems.length)];
+                const choiceText = randomItem.romaji;
+                if (choiceText !== correctAnswer) {
+                    choices.add(choiceText);
+                }
+            }
+
+            const shuffledChoices = Array.from(choices).sort(() => Math.random() - 0.5);
+
+            const optionsContainer = document.getElementById('quizOptions');
+            optionsContainer.innerHTML = '';
+
+            shuffledChoices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 border-2 border-emerald-200 text-emerald-900 font-black text-2xl md:text-3xl py-5 md:py-6 rounded-3xl shadow-sm transition bouncy';
+                btn.textContent = choice;
+                btn.onclick = () => checkQuizAnswer(choice, correctAnswer, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            setTimeout(() => speakText(currentQuizItem.kana), 300);
+        }
+
+        function speakCurrentQuizKana() {
+            if (currentQuizItem) {
+                speakText(currentQuizItem.kana);
+            }
+        }
+
+        function checkQuizAnswer(selected, correct, btnElement) {
+            const feedback = document.getElementById('quizFeedback');
+            feedback.classList.remove('hidden');
+
+            if (selected === correct) {
+                playSound('correct');
+                quizScore += 10;
+                document.getElementById('quizScore').textContent = quizScore;
+
+                feedback.className = 'text-emerald-700 bg-emerald-100 border-2 border-emerald-300 text-2xl md:text-3xl font-black py-3 rounded-2xl block';
+                feedback.innerHTML = '🎉 せいかい！ すごいね！';
+
+                btnElement.classList.remove('bg-emerald-50', 'border-emerald-200');
+                btnElement.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600');
+
+                document.querySelectorAll('#quizOptions button').forEach(b => b.disabled = true);
+
+                setTimeout(() => {
+                    loadNextQuizQuestion();
+                }, 1200);
+
+            } else {
+                playSound('wrong');
+                feedback.className = 'text-rose-700 bg-rose-100 border-2 border-rose-300 text-2xl md:text-3xl font-black py-3 rounded-2xl block';
+                feedback.innerHTML = '❌ ざんねん！ もういちど！';
+
+                btnElement.classList.remove('bg-emerald-50');
+                btnElement.classList.add('bg-rose-200', 'text-rose-800', 'border-rose-300');
+            }
+        }
+
+        function resetQuiz() {
+            quizScore = 0;
+            document.getElementById('quizScore').textContent = quizScore;
+            loadNextQuizQuestion();
+        }
+
+        let currentWordIndex = 0;
+        let typingTargetRomaji = "";
+        let typedInput = "";
+        let typingScore = 0;
+
+        function setupTypingWord() {
+            const wordObj = wordsData[currentWordIndex];
+            document.getElementById('typingIcon').textContent = wordObj.icon;
+            document.getElementById('typingKana').textContent = wordObj.kana;
+
+            typingTargetRomaji = wordObj.romaji.toLowerCase();
+            typedInput = "";
+
+            renderTypingSlots();
+            renderOnScreenKeyboard();
+
+            speakText(wordObj.kana);
+        }
+
+        function renderTypingSlots() {
+            const container = document.getElementById('romajiSlots');
+            container.innerHTML = '';
+
+            for (let i = 0; i < typingTargetRomaji.length; i++) {
+                const charBox = document.createElement('div');
+                const targetChar = typingTargetRomaji[i];
+                const isTyped = i < typedInput.length;
+                const isCurrent = i === typedInput.length;
+
+                charBox.className = `w-12 h-14 md:w-16 md:h-20 rounded-2xl font-black text-3xl md:text-4xl flex items-center justify-center border-2 transition-all ${
+                    isTyped 
+                        ? 'bg-blue-500 text-white border-blue-600 shadow-md' 
+                        : isCurrent 
+                        ? 'bg-amber-100 text-amber-800 border-amber-400 animate-pulse scale-105' 
+                        : 'bg-slate-100 text-slate-300 border-slate-200'
+                }`;
+
+                charBox.textContent = isTyped ? typedInput[i] : (isCurrent ? '?' : targetChar);
+                container.appendChild(charBox);
+            }
+        }
+
+        function handleTypingInput(char) {
+            char = char.toLowerCase();
+            const nextExpectedChar = typingTargetRomaji[typedInput.length];
+
+            if (char === nextExpectedChar) {
+                playSound('tap');
+                typedInput += char;
+                renderTypingSlots();
+
+                if (typedInput === typingTargetRomaji) {
+                    playSound('correct');
+                    typingScore++;
+                    document.getElementById('typingScore').textContent = typingScore;
+
+                    setTimeout(() => {
+                        nextTypingWord();
+                    }, 800);
+                }
+            } else {
+                playSound('wrong');
+            }
+        }
+
+        function nextTypingWord() {
+            currentWordIndex = (currentWordIndex + 1) % wordsData.length;
+            setupTypingWord();
+        }
+
+        function renderOnScreenKeyboard() {
+            const container = document.getElementById('onScreenKeyboard');
+            container.innerHTML = '';
+
+            const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
+            alphabet.forEach(letter => {
+                const keyBtn = document.createElement('button');
+                keyBtn.className = 'bg-slate-100 hover:bg-blue-100 active:bg-blue-500 active:text-white border-2 border-slate-200 text-slate-800 font-black py-3 md:py-4 rounded-2xl shadow-sm text-base md:text-xl bouncy';
+                keyBtn.textContent = letter;
+                keyBtn.onclick = () => handleTypingInput(letter);
+                container.appendChild(keyBtn);
+            });
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (!document.getElementById('contentTyping').classList.contains('hidden')) {
+                if (e.key.length === 1 && e.key.match(/[a-zA-Z]/)) {
+                    handleTypingInput(e.key);
+                }
+            }
+        });
+
+        window.onload = () => {
+            renderChart('seion');
+        };
+    </script>
+</body>
+</html>
